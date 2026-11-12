@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "dgSpecHash": "xE54232b5ms=",
+  "success": false,
+  "projectFilePath": "C:\\Users\\mishr\\Desktop\\Priti\\self-projects\\DocuMind AI\\backend\\DocuMind.API\\DocuMind.API.csproj",
+  "expectedPackageFiles": [],
+  "logs": [
+    {
+      "code": "NU1301",
+      "level": "Error",
+      "message": "Unable to load the service index for source https://api.nuget.org/v3/index.json.\r\n  No such host is known. (api.nuget.org:443)\r\n  No such host is known.",
+      "projectPath": "C:\\Users\\mishr\\Desktop\\Priti\\self-projects\\DocuMind AI\\backend\\DocuMind.API\\DocuMind.API.csproj",
+      "filePath": "C:\\Users\\mishr\\Desktop\\Priti\\self-projects\\DocuMind AI\\backend\\DocuMind.API\\DocuMind.API.csproj",
+      "libraryId": "Microsoft.AspNetCore.OpenApi",
+      "targetGraphs": []
+    }
+  ]
+}
