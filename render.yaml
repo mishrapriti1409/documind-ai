@@ -1,0 +1,58 @@
+services:
+  # Python AI Microservice (FastAPI + PyMuPDF + tiktoken + pgvector)
+  - type: web
+    name: documind-ai
+    runtime: docker
+    dockerfilePath: ./ai-service/Dockerfile
+    dockerContext: ./ai-service
+    plan: standard
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AI_SERVICE_API_KEY
+        generateValue: true
+      - key: EMBEDDING_PROVIDER
+        value: openai
+      - key: LLM_PROVIDER
+        value: openai
+      - key: CHUNK_SIZE
+        value: "600"
+      - key: CHUNK_OVERLAP
+        value: "100"
+      - key: LOG_LEVEL
+        value: INFO
+
+  # ASP.NET Core 9 Web API
+  - type: web
+    name: documind-api
+    runtime: docker
+    dockerfilePath: ./backend/DocuMind.API/Dockerfile
+    dockerContext: .
+    plan: standard
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:5000
+      - key: ConnectionStrings__DefaultConnection
+        sync: false
+      - key: JwtSettings__Secret
+        generateValue: true
+      - key: JwtSettings__Issuer
+        value: DocuMindAPI
+      - key: JwtSettings__Audience
+        value: DocuMindClients
+      - key: JwtSettings__ExpiryInHours
+        value: "8"
+      - key: AIServiceClient__BaseUrl
+        fromService:
+          name: documind-ai
+          type: web
+          property: host
+      - key: AIServiceClient__ApiKey
+        fromService:
+          name: documind-ai
+          type: web
+          envVarKey: AI_SERVICE_API_KEY
