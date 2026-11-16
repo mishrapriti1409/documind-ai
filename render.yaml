@@ -5,7 +5,8 @@ services:
     runtime: docker
     dockerfilePath: ./ai-service/Dockerfile
     dockerContext: ./ai-service
-    plan: standard
+    plan: free
+    region: oregon
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -30,7 +31,8 @@ services:
     runtime: docker
     dockerfilePath: ./backend/DocuMind.API/Dockerfile
     dockerContext: .
-    plan: standard
+    plan: free
+    region: oregon
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
@@ -56,3 +58,4 @@ services:
           name: documind-ai
           type: web
           envVarKey: AI_SERVICE_API_KEY
+

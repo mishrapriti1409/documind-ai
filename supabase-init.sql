@@ -23,3 +23,4 @@ END $$;
 -- Connection String format for Supabase:
 -- Transaction Pooler (port 6543) or Direct Connection (port 5432):
 -- Host=aws-0-[region].pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.[project-ref];Password=[your-password];SSL Mode=Require;Trust Server Certificate=true;
+
