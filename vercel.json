@@ -1,0 +1,41 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "angular",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist/frontend/browser",
+      "rewrites": [
+        {
+          "source": "/(.*)",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    "ai-service": {
+      "root": "ai-service",
+      "entrypoint": "main.py",
+      "rewrites": [
+        {
+          "source": "/ai/:path(.*)?",
+          "destination": "/:path"
+        }
+      ]
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/ai/(.*)",
+      "destination": {
+        "service": "ai-service"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "frontend"
+      }
+    }
+  ]
+}
