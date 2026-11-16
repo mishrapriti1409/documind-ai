@@ -1,0 +1,110 @@
+.analytics-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+
+  .kpi-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.bg-blue { background-color: #eff6ff; color: #2563eb; }
+    &.bg-indigo { background-color: #eef2ff; color: #4f46e5; }
+    &.bg-green { background-color: #f0fdf4; color: #16a34a; }
+    &.bg-amber { background-color: #fffbeb; color: #d97706; }
+  }
+
+  .kpi-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .kpi-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin: 0.25rem 0;
+  }
+
+  .kpi-subtext {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+
+    &.text-success { color: #16a34a; }
+  }
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .card-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: block;
+    margin-top: 0.25rem;
+  }
+}
+
+.period-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chart-container {
+  position: relative;
+  height: 320px;
+  width: 100%;
+}
+
+.table th {
+  background-color: var(--surface-ground);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.875rem 1rem;
+}
+
+.table td {
+  padding: 1rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.font-medium {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.badge-gray {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+

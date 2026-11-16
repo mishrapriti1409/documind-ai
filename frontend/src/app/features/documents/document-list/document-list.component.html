@@ -1,0 +1,135 @@
+<div class="document-list-page">
+  <div class="page-title-row">
+    <div>
+      <h1>Document Library</h1>
+      <p>Secure organizational repository with semantic chunking & pgvector indexing.</p>
+    </div>
+    <div>
+      <button class="btn btn-primary" (click)="isUploadVisible = !isUploadVisible">
+        <span>{{ isUploadVisible ? '✕ Close Upload' : '+ Upload Document' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="actionMessage" class="alert alert-success">
+    <span>✓ {{ actionMessage }}</span>
+  </div>
+
+  <!-- Upload Modal / Accordion Component -->
+  <app-document-upload
+    *ngIf="isUploadVisible"
+    (uploaded)="onUploaded()"
+    (cancelled)="isUploadVisible = false"
+  ></app-document-upload>
+
+  <!-- Filter Controls -->
+  <div class="filter-bar card">
+    <div class="filter-group">
+      <label>Category</label>
+      <select [(ngModel)]="categoryFilter" (change)="onFilterChange()">
+        <option value="">All Categories</option>
+        <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Processing Status</label>
+      <select [(ngModel)]="statusFilter" (change)="onFilterChange()">
+        <option value="">All Statuses</option>
+        <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+      </select>
+    </div>
+
+    <div class="filter-count text-muted text-sm" *ngIf="!isLoading">
+      Showing {{ documents.length }} of {{ total }} documents
+    </div>
+  </div>
+
+  <!-- Documents Table -->
+  <div class="table-container card">
+    <div *ngIf="isLoading" class="loading-state">
+      <span class="spinner"></span>
+      <p>Retrieving documents...</p>
+    </div>
+
+    <div *ngIf="!isLoading && documents.length === 0" class="empty-state">
+      <p>No documents found matching the selected filters.</p>
+      <button class="btn btn-primary btn-sm mt-3" (click)="isUploadVisible = true">Upload your first document</button>
+    </div>
+
+    <table class="data-table" *ngIf="!isLoading && documents.length > 0">
+      <thead>
+        <tr>
+          <th>File Name</th>
+          <th>Category</th>
+          <th>Size</th>
+          <th>Pages</th>
+          <th>Chunks</th>
+          <th>Status</th>
+          <th>Uploaded By</th>
+          <th>Uploaded</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let doc of documents">
+          <td>
+            <strong>{{ doc.originalFileName }}</strong>
+            <div class="text-muted text-sm" *ngIf="doc.tags">Tags: {{ doc.tags }}</div>
+            <div class="error-detail" *ngIf="doc.processingError">⚠️ {{ doc.processingError }}</div>
+          </td>
+          <td>
+            <span class="badge badge-secondary">{{ doc.category || 'General' }}</span>
+          </td>
+          <td>{{ formatBytes(doc.fileSizeBytes) }}</td>
+          <td>{{ doc.totalPages || '-' }}</td>
+          <td>{{ doc.totalChunks || '-' }}</td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-success': doc.processingStatus === 'Completed',
+              'badge-warning': doc.processingStatus === 'Pending' || doc.processingStatus === 'Processing',
+              'badge-error': doc.processingStatus === 'Failed',
+              'badge-secondary': doc.processingStatus === 'Uploaded'
+            }">
+              {{ doc.processingStatus }}
+            </span>
+          </td>
+          <td>{{ doc.uploadedBy }}</td>
+          <td>{{ doc.createdAt | date:'short' }}</td>
+          <td>
+            <div class="table-actions">
+              <button
+                *ngIf="doc.processingStatus === 'Failed'"
+                class="btn btn-secondary btn-sm"
+                (click)="retryProcessing(doc)"
+                title="Retry processing"
+              >
+                🔄 Retry
+              </button>
+              <button
+                *ngIf="auth.hasRole('Admin', 'Manager')"
+                class="btn btn-icon btn-sm text-error"
+                (click)="deleteDocument(doc)"
+                title="Delete document"
+              >
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination-footer" *ngIf="total > pageSize">
+      <button class="btn btn-secondary btn-sm" [disabled]="page <= 1" (click)="onPageChange(page - 1)">
+        Previous
+      </button>
+      <span class="page-indicator text-sm">Page {{ page }} of {{ (total / pageSize) | number:'1.0-0' }}</span>
+      <button class="btn btn-secondary btn-sm" [disabled]="page * pageSize >= total" (click)="onPageChange(page + 1)">
+        Next
+      </button>
+    </div>
+  </div>
+</div>
+

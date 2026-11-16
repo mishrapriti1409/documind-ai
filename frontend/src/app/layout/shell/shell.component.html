@@ -1,0 +1,90 @@
+<div class="app-layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <!-- Sidebar -->
+  <aside class="app-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">🧠</div>
+      <div class="brand-info" *ngIf="!isSidebarCollapsed">
+        <span class="brand-title">DocuMind AI</span>
+        <span class="brand-tagline">Enterprise Intelligence</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-navigation">
+      <div class="nav-section-label" *ngIf="!isSidebarCollapsed">WORKSPACE</div>
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link" title="Overview">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">Overview</span>
+      </a>
+      <a routerLink="/documents" routerLinkActive="active" class="nav-link" title="Documents">
+        <span class="nav-icon">📁</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">Documents</span>
+      </a>
+      <a routerLink="/chat" routerLinkActive="active" class="nav-link" title="AI Assistant">
+        <span class="nav-icon">🤖</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">AI Assistant</span>
+      </a>
+      <a routerLink="/compare" routerLinkActive="active" class="nav-link" title="Compare Documents">
+        <span class="nav-icon">⚖️</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">Compare</span>
+      </a>
+      <a routerLink="/summary" routerLinkActive="active" class="nav-link" title="Summarize & Extract">
+        <span class="nav-icon">📝</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">Summarize</span>
+      </a>
+
+      <div class="nav-section-label" *ngIf="!isSidebarCollapsed">ADMINISTRATION</div>
+      <a *ngIf="auth.hasRole('Admin', 'Manager')" routerLink="/analytics" routerLinkActive="active" class="nav-link" title="Analytics">
+        <span class="nav-icon">📈</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">Analytics</span>
+      </a>
+      <a *ngIf="auth.hasRole('Admin')" routerLink="/users" routerLinkActive="active" class="nav-link" title="User Management">
+        <span class="nav-icon">👥</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">Users</span>
+      </a>
+      <a *ngIf="auth.hasRole('Admin', 'Auditor')" routerLink="/audit" routerLinkActive="active" class="nav-link" title="Audit Logs">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">Audit Logs</span>
+      </a>
+
+      <div class="nav-section-label" *ngIf="!isSidebarCollapsed">PREFERENCES</div>
+      <a routerLink="/settings" routerLinkActive="active" class="nav-link" title="Settings">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-text" *ngIf="!isSidebarCollapsed">Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-user" *ngIf="auth.currentUser$ | async as user">
+      <div class="user-avatar">{{ user.firstName[0] }}{{ user.lastName[0] }}</div>
+      <div class="user-meta" *ngIf="!isSidebarCollapsed">
+        <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+        <div class="user-role badge badge-info">{{ user.role }}</div>
+      </div>
+      <button class="btn btn-icon btn-logout" (click)="auth.logout()" title="Sign Out">
+        🚪
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="app-main">
+    <header class="app-header">
+      <div class="header-left">
+        <button class="btn btn-icon" (click)="toggleSidebar()" title="Toggle Sidebar">
+          ☰
+        </button>
+        <span class="header-status">
+          <span class="status-indicator online"></span>
+          DocuMind Connected
+        </span>
+      </div>
+      <div class="header-right" *ngIf="auth.currentUser$ | async as user">
+        <span class="org-badge badge badge-secondary">Tenant: {{ user.organizationId.substring(0, 8) }}...</span>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+

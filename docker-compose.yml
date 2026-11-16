@@ -1,0 +1,100 @@
+services:
+  # PostgreSQL with pgvector extension
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: documind-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-documind}
+      POSTGRES_USER: ${POSTGRES_USER:-documind_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-documind_secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-documind_user} -d ${POSTGRES_DB:-documind}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - documind-network
+
+  # Python AI Microservice (FastAPI + PyMuPDF + LangChain/pgvector)
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: documind-ai-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-documind_user}:${POSTGRES_PASSWORD:-documind_secret}@postgres:5432/${POSTGRES_DB:-documind}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-dummy-key-for-local-development}
+      - AI_SERVICE_API_KEY=${AI_SERVICE_API_KEY:-documind-internal-ai-secret-key-32chars}
+      - EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER:-openai}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - CHUNK_SIZE=600
+      - CHUNK_OVERLAP=100
+      - LOG_LEVEL=INFO
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - documind-network
+
+  # ASP.NET Core 9 Clean Architecture Web API
+  api:
+    build:
+      context: .
+      dockerfile: backend/DocuMind.API/Dockerfile
+    container_name: documind-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-documind};Username=${POSTGRES_USER:-documind_user};Password=${POSTGRES_PASSWORD:-documind_secret}
+      - JwtSettings__Secret=${JWT_SECRET:-DocuMindEnterpriseSuperSecretKeyThatIsAtLeast32BytesLong!}
+      - JwtSettings__Issuer=DocuMindAPI
+      - JwtSettings__Audience=DocuMindClients
+      - JwtSettings__ExpiryInHours=8
+      - AIServiceClient__BaseUrl=http://ai-service:8000
+      - AIServiceClient__ApiKey=${AI_SERVICE_API_KEY:-documind-internal-ai-secret-key-32chars}
+    ports:
+      - "5000:5000"
+    networks:
+      - documind-network
+
+  # Angular 18 Enterprise Frontend (Nginx SPA)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: documind-frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "4200:80"
+    networks:
+      - documind-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  documind-network:
+    driver: bridge
+

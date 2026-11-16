@@ -1,0 +1,120 @@
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .actions {
+    display: flex;
+    gap: 12px;
+  }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+
+  .kpi-card {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .kpi-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        letter-spacing: 0.05em;
+      }
+
+      .kpi-icon {
+        font-size: 18px;
+      }
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin: 12px 0;
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+
+.quick-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+
+  .quick-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+
+    .qc-icon {
+      font-size: 32px;
+      padding: 12px;
+      background: var(--color-primary-light);
+      border-radius: var(--radius-md);
+      flex-shrink: 0;
+    }
+
+    .qc-content {
+      flex: 1;
+
+      h3 {
+        font-size: 15px;
+        margin-bottom: 4px;
+        color: var(--color-text-primary);
+      }
+
+      p {
+        font-size: 13px;
+        line-height: 1.4;
+      }
+    }
+
+    .qc-arrow {
+      font-size: 20px;
+      color: var(--color-primary);
+      font-weight: bold;
+    }
+  }
+}
+
+.section-card {
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .loading-state, .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--color-text-secondary);
+  }
+}
+

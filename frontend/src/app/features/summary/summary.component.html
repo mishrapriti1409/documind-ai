@@ -1,0 +1,116 @@
+<div class="summary-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Document Intelligence & Summarization</h1>
+      <p class="page-subtitle">Extract structured insights, contractual terms, obligations, and executive summaries.</p>
+    </div>
+  </div>
+
+  <div class="control-panel card">
+    <!-- Document selector -->
+    <div class="form-group mb-4">
+      <label class="form-label" for="docSelect">Select Target Document</label>
+      <select id="docSelect" class="form-control" [(ngModel)]="selectedDocId" [disabled]="isGenerating || isLoadingDocs">
+        <option value="" disabled>-- Select Document --</option>
+        <option *ngFor="let doc of documents" [value]="doc.id">
+          {{ doc.originalFileName }} ({{ doc.totalPages }} pages, {{ doc.fileSizeBytes / 1024 / 1024 | number:'1.1-2' }} MB)
+        </option>
+      </select>
+    </div>
+
+    <!-- Summary Type Selector Grid -->
+    <div class="form-group mb-4">
+      <label class="form-label">Intelligence Extraction Mode</label>
+      <div class="type-grid">
+        <div
+          *ngFor="let type of summaryTypes"
+          class="type-card"
+          [class.selected]="selectedType === type.id"
+          (click)="selectedType = type.id"
+        >
+          <div class="type-header">
+            <span class="type-title">{{ type.label }}</span>
+            <span class="radio-indicator" [class.checked]="selectedType === type.id"></span>
+          </div>
+          <p class="type-desc">{{ type.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button
+        class="btn btn-primary btn-generate"
+        (click)="generateSummary()"
+        [disabled]="isGenerating || !selectedDocId"
+      >
+        <span *ngIf="!isGenerating">Generate {{ getTypeLabel(selectedType) }}</span>
+        <span *ngIf="isGenerating" class="btn-loading">
+          <span class="spinner-sm"></span> Analyzing & Extracting...
+        </span>
+      </button>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-banner">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isGenerating" class="loading-state card">
+    <div class="spinner"></div>
+    <h3>AI Extraction in Progress</h3>
+    <p>Synthesizing insights for <strong>{{ getSelectedDocName() }}</strong> using {{ getTypeLabel(selectedType) }} mode...</p>
+  </div>
+
+  <!-- Result Container -->
+  <div *ngIf="summaryResult && !isGenerating" class="result-card card">
+    <div class="card-header result-header">
+      <div>
+        <h2 class="card-title">{{ getTypeLabel(summaryResult.summary_type) }}</h2>
+        <span class="doc-badge">{{ getSelectedDocName() }}</span>
+      </div>
+      <div class="header-actions">
+        <span class="badge badge-primary">{{ summaryResult.tokens_used }} tokens</span>
+        <button class="btn btn-secondary btn-copy" (click)="copyContent()">
+          <svg *ngIf="!copied" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <svg *ngIf="copied" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          {{ copied ? 'Copied!' : 'Copy' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body result-body">
+      <!-- Plain Text / Markdown Result -->
+      <div *ngIf="!isObjectContent()" class="text-content">
+        <div class="prose-output">{{ summaryResult.content }}</div>
+      </div>
+
+      <!-- Structured Array Result (e.g. Dates, Entities, FAQs, Obligations) -->
+      <div *ngIf="isArrayContent()" class="structured-array">
+        <div *ngFor="let item of summaryResult.content; let idx = index" class="structured-item card">
+          <!-- When array items are simple objects -->
+          <div *ngIf="item && (item.question || item.date || item.term || item.obligation || item.name)" class="item-fields">
+            <div *ngFor="let key of item | keyvalue" class="field-row">
+              <span class="field-key">{{ key.key }}:</span>
+              <span class="field-val">{{ key.value }}</span>
+            </div>
+          </div>
+          <!-- Fallback when array item is primitive or generic -->
+          <div *ngIf="!item.question && !item.date && !item.term && !item.obligation && !item.name" class="generic-item">
+            {{ item | json }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Structured Object Result -->
+      <div *ngIf="isObjectContent() && !isArrayContent()" class="structured-object">
+        <pre class="json-code"><code>{{ summaryResult.content | json }}</code></pre>
+      </div>
+    </div>
+  </div>
+</div>

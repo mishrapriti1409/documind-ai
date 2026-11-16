@@ -1,0 +1,50 @@
+# Build outputs
+dist/
+build/
+bin/
+obj/
+out/
+
+# Dependencies
+node_modules/
+.npm/
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# IDE & Editor files
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Angular cache
+.angular/
+
+# Testing & Coverage
+coverage/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local Environment Variables & Secrets
+.env
+.env.local
+*.local.json
+
+# Storage & Temp Data
+uploads/
+logs/
+*.log
+postgres_data/
+
+# OS Generated
+.DS_Store
+Thumbs.db
+

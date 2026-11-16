@@ -1,0 +1,74 @@
+.document-list-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 20px;
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+    }
+
+    select {
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      font-size: 13px;
+    }
+  }
+
+  .filter-count {
+    margin-left: auto;
+  }
+}
+
+.table-container {
+  padding: 0;
+
+  .loading-state, .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: var(--color-text-secondary);
+  }
+
+  .error-detail {
+    font-size: 11px;
+    color: var(--color-error);
+    margin-top: 4px;
+  }
+
+  .table-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--color-border);
+  }
+}
+

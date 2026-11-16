@@ -1,0 +1,113 @@
+<div class="audit-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Compliance & Audit Trail</h1>
+      <p class="page-subtitle">Immutable security log of document operations, access, role updates, and AI queries.</p>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner mb-4">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Filter Card -->
+  <div class="card filter-card mb-4">
+    <div class="filter-row">
+      <div class="filter-item">
+        <label class="form-label" for="actionFilter">Filter by Action</label>
+        <select id="actionFilter" class="form-control" [(ngModel)]="filterAction" (change)="onActionFilterChange()">
+          <option value="">All Actions</option>
+          <option *ngFor="let act of actions" [value]="act">{{ act }}</option>
+        </select>
+      </div>
+
+      <div class="filter-info">
+        <span class="text-muted">Total Recorded Events: <strong>{{ total }}</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audit Table -->
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Resource Type</th>
+            <th>IP Address</th>
+            <th class="text-right">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of logs">
+            <td class="text-muted font-mono">{{ log.createdAt | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+            <td class="font-medium">{{ log.userName }}</td>
+            <td>
+              <span class="badge badge-action">{{ log.action }}</span>
+            </td>
+            <td>
+              <span class="badge badge-resource">{{ log.resourceType }}</span>
+            </td>
+            <td class="text-muted font-mono">{{ log.ipAddress || 'Internal' }}</td>
+            <td class="text-right">
+              <button class="btn btn-sm btn-secondary" (click)="viewDetails(log)">
+                Inspect
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="logs.length === 0 && !isLoading">
+            <td colspan="6" class="text-center text-muted p-4">
+              No audit logs recorded for the selected filter.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="card-footer pagination-footer" *ngIf="totalPages > 1">
+      <span class="text-muted text-sm">Showing page {{ page }} of {{ totalPages }} ({{ total }} total logs)</span>
+      <div class="pagination-buttons">
+        <button class="btn btn-sm btn-secondary" [disabled]="page === 1" (click)="goToPage(page - 1)">Previous</button>
+        <button class="btn btn-sm btn-secondary" [disabled]="page === totalPages" (click)="goToPage(page + 1)">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-backdrop" *ngIf="selectedLogDetails" (click)="closeDetails()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Audit Record Details</h3>
+        <button class="modal-close-btn" (click)="closeDetails()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="meta-grid">
+          <div><strong>Action:</strong> {{ selectedLogDetails.action }}</div>
+          <div><strong>User:</strong> {{ selectedLogDetails.userName }}</div>
+          <div><strong>Timestamp:</strong> {{ selectedLogDetails.createdAt | date:'medium' }}</div>
+          <div><strong>Resource Type:</strong> {{ selectedLogDetails.resourceType }}</div>
+          <div><strong>Resource ID:</strong> {{ selectedLogDetails.resourceId || 'N/A' }}</div>
+          <div><strong>IP Address:</strong> {{ selectedLogDetails.ipAddress || 'Internal' }}</div>
+        </div>
+
+        <div class="diff-section" *ngIf="selectedLogDetails.oldValues">
+          <label class="diff-label">Previous State (Old Values)</label>
+          <pre class="json-box"><code>{{ formatJson(selectedLogDetails.oldValues) }}</code></pre>
+        </div>
+
+        <div class="diff-section" *ngIf="selectedLogDetails.newValues">
+          <label class="diff-label">Modified State / Payload (New Values)</label>
+          <pre class="json-box"><code>{{ formatJson(selectedLogDetails.newValues) }}</code></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+

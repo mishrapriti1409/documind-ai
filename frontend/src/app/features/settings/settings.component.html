@@ -1,0 +1,109 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Account & Organization Settings</h1>
+      <p class="page-subtitle">Manage your personal credentials, profile information, and organization settings.</p>
+    </div>
+  </div>
+
+  <div class="settings-grid">
+    <!-- User Profile Card -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h2 class="card-title">User Profile</h2>
+      </div>
+      <div class="card-body">
+        <div class="profile-info-grid">
+          <div class="info-field">
+            <span class="info-label">Full Name</span>
+            <span class="info-value">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+          </div>
+
+          <div class="info-field">
+            <span class="info-label">Email Address</span>
+            <span class="info-value font-mono">{{ currentUser?.email }}</span>
+          </div>
+
+          <div class="info-field">
+            <span class="info-label">Organization ID</span>
+            <span class="info-value font-mono text-muted">{{ currentUser?.organizationId }}</span>
+          </div>
+
+          <div class="info-field">
+            <span class="info-label">Platform Role</span>
+            <span class="info-value">
+              <span class="badge badge-primary">{{ currentUser?.role }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security & Password Change Card -->
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Security & Password</h2>
+      </div>
+      <div class="card-body">
+        <div *ngIf="passwordSuccess" class="alert alert-success mb-3">
+          {{ passwordSuccess }}
+        </div>
+
+        <div *ngIf="passwordError" class="alert alert-danger mb-3">
+          {{ passwordError }}
+        </div>
+
+        <form (ngSubmit)="onChangePassword()" class="password-form">
+          <div class="form-group mb-3">
+            <label class="form-label" for="currPass">Current Password</label>
+            <input
+              type="password"
+              id="currPass"
+              class="form-control"
+              [(ngModel)]="currentPassword"
+              name="currentPassword"
+              placeholder="Enter current password"
+              required
+            />
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label" for="newPass">New Password</label>
+            <input
+              type="password"
+              id="newPass"
+              class="form-control"
+              [(ngModel)]="newPassword"
+              name="newPassword"
+              placeholder="At least 8 characters"
+              required
+            />
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="form-label" for="confPass">Confirm New Password</label>
+            <input
+              type="password"
+              id="confPass"
+              class="form-control"
+              [(ngModel)]="confirmPassword"
+              name="confirmPassword"
+              placeholder="Re-enter new password"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isChangingPassword || !currentPassword || !newPassword || !confirmPassword"
+          >
+            <span *ngIf="!isChangingPassword">Update Password</span>
+            <span *ngIf="isChangingPassword">Saving...</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+

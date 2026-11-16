@@ -1,0 +1,110 @@
+<div class="users-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">User & Role Management</h1>
+      <p class="page-subtitle">Manage organization users, role assignments, and account access permissions.</p>
+    </div>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success mb-4">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner mb-4">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="card toolbar-card mb-4">
+    <div class="toolbar-grid">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          class="form-control search-input"
+          placeholder="Search by name or email..."
+          [(ngModel)]="searchTerm"
+          (input)="applyFilter()"
+        />
+      </div>
+
+      <div class="filter-group">
+        <select class="form-control" [(ngModel)]="roleFilter" (change)="applyFilter()">
+          <option value="">All Roles</option>
+          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="card table-card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Last Active</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of filteredUsers">
+            <td>
+              <div class="user-cell">
+                <div class="avatar">{{ user.firstName[0] }}{{ user.lastName[0] }}</div>
+                <div>
+                  <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+                  <span *ngIf="user.id === currentUserId" class="badge-you">You</span>
+                </div>
+              </div>
+            </td>
+            <td class="text-secondary">{{ user.email }}</td>
+            <td>
+              <select
+                class="form-control role-select"
+                [ngModel]="user.role"
+                (ngModelChange)="onRoleChange(user, $event)"
+                [disabled]="user.id === currentUserId"
+              >
+                <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+              </select>
+            </td>
+            <td>
+              <span class="badge" [class.badge-success]="user.isActive" [class.badge-danger]="!user.isActive">
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="text-muted">
+              {{ user.lastLoginAt ? (user.lastLoginAt | date:'mediumDate') : 'Never' }}
+            </td>
+            <td class="text-right">
+              <button
+                class="btn btn-sm"
+                [class.btn-danger]="user.isActive"
+                [class.btn-secondary]="!user.isActive"
+                (click)="toggleActive(user)"
+                [disabled]="user.id === currentUserId"
+                [title]="user.isActive ? 'Deactivate Account' : 'Activate Account'"
+              >
+                {{ user.isActive ? 'Deactivate' : 'Activate' }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredUsers.length === 0 && !isLoading">
+            <td colspan="6" class="text-center text-muted p-4">
+              No users matching your search filters.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,66 @@
+<div class="upload-container card">
+  <div class="upload-header">
+    <h3>Upload Business Document</h3>
+    <button class="btn btn-icon" (click)="cancelled.emit()">✕</button>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span>⚠️ {{ errorMessage }}</span>
+  </div>
+
+  <!-- Drag and drop zone -->
+  <div
+    class="dropzone"
+    [class.dragging]="isDragging"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    *ngIf="!selectedFile"
+  >
+    <div class="dropzone-icon">📄</div>
+    <h4>Drag and drop your document here</h4>
+    <p>Supports PDF, DOCX, XLSX, TXT, and CSV up to 50 MB</p>
+    <label class="btn btn-secondary btn-sm browse-btn">
+      Browse Files
+      <input type="file" (change)="onFileSelected($event)" accept=".pdf,.docx,.doc,.xlsx,.xls,.txt,.csv" hidden />
+    </label>
+  </div>
+
+  <!-- Selected file preview -->
+  <div class="selected-file-box" *ngIf="selectedFile">
+    <div class="file-icon">📑</div>
+    <div class="file-details">
+      <div class="file-name">{{ selectedFile.name }}</div>
+      <div class="file-size">{{ formatBytes(selectedFile.size) }}</div>
+    </div>
+    <button class="btn btn-icon btn-sm remove-btn" (click)="removeFile()" [disabled]="isUploading">✕</button>
+  </div>
+
+  <!-- Metadata Form -->
+  <form [formGroup]="uploadForm" (ngSubmit)="submitUpload()" class="upload-metadata-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="cat">Category</label>
+        <select id="cat" formControlName="category">
+          <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="tags">Tags (Comma-separated)</label>
+        <input id="tags" type="text" formControlName="tags" placeholder="e.g. 2026, GDPR, Q3" />
+      </div>
+    </div>
+
+    <div class="upload-actions">
+      <button type="button" class="btn btn-secondary" (click)="cancelled.emit()" [disabled]="isUploading">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="!selectedFile || isUploading">
+        <span *ngIf="isUploading" class="spinner" style="width: 14px; height: 14px;"></span>
+        <span>{{ isUploading ? 'Ingesting...' : 'Start Ingestion Pipeline' }}</span>
+      </button>
+    </div>
+  </form>
+</div>
+

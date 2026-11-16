@@ -1,0 +1,128 @@
+<div class="analytics-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Platform Analytics & Intelligence Metrics</h1>
+      <p class="page-subtitle">Document processing telemetry, query volume, AI costs, and user engagement metrics.</p>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner mb-4">
+    {{ errorMessage }}
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="kpi-grid">
+    <div class="card kpi-card">
+      <div class="kpi-icon bg-blue">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Total Documents</span>
+        <span class="kpi-value">{{ stats?.totalDocuments || 0 }}</span>
+        <span class="kpi-subtext text-success">{{ stats?.processedDocuments || 0 }} processed</span>
+      </div>
+    </div>
+
+    <div class="card kpi-card">
+      <div class="kpi-icon bg-indigo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">AI Queries & Messages</span>
+        <span class="kpi-value">{{ stats?.totalMessages || 0 }}</span>
+        <span class="kpi-subtext">{{ stats?.totalConversations || 0 }} conversations</span>
+      </div>
+    </div>
+
+    <div class="card kpi-card">
+      <div class="kpi-icon bg-green">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Avg. Ingestion Latency</span>
+        <span class="kpi-value">{{ stats?.averageProcessingTimeSeconds ? (stats!.averageProcessingTimeSeconds | number:'1.1-1') + 's' : '0.0s' }}</span>
+        <span class="kpi-subtext">Chunking & embedding</span>
+      </div>
+    </div>
+
+    <div class="card kpi-card">
+      <div class="kpi-icon bg-amber">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      </div>
+      <div class="kpi-content">
+        <span class="kpi-label">Estimated AI Cost</span>
+        <span class="kpi-value">${{ stats?.totalAICostEstimate ? (stats!.totalAICostEstimate | number:'1.2-4') : '0.00' }}</span>
+        <span class="kpi-subtext">OpenAI GPT-4o / Azure</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ingestion Trend Chart Card -->
+  <div class="card chart-card mb-4">
+    <div class="card-header chart-header">
+      <div>
+        <h2 class="card-title">Document Ingestion Trend</h2>
+        <span class="card-subtitle">Volume of uploaded documents indexed over time</span>
+      </div>
+      <div class="period-selector">
+        <button class="btn btn-sm" [class.btn-primary]="selectedDays === 7" [class.btn-secondary]="selectedDays !== 7" (click)="onDaysChange(7)">7 Days</button>
+        <button class="btn btn-sm" [class.btn-primary]="selectedDays === 14" [class.btn-secondary]="selectedDays !== 14" (click)="onDaysChange(14)">14 Days</button>
+        <button class="btn btn-sm" [class.btn-primary]="selectedDays === 30" [class.btn-secondary]="selectedDays !== 30" (click)="onDaysChange(30)">30 Days</button>
+        <button class="btn btn-sm" [class.btn-primary]="selectedDays === 90" [class.btn-secondary]="selectedDays !== 90" (click)="onDaysChange(90)">90 Days</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas #trendChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Activity Leaderboard -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">User Activity & Adoption</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Documents Uploaded</th>
+            <th>Questions Asked</th>
+            <th>Last Active</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of userActivity">
+            <td class="font-medium">{{ user.userName }}</td>
+            <td>
+              <span class="badge badge-primary">{{ user.documentsUploaded }}</span>
+            </td>
+            <td>
+              <span class="badge badge-gray">{{ user.questionsAsked }}</span>
+            </td>
+            <td class="text-muted">{{ user.lastActive | date:'medium' }}</td>
+          </tr>
+          <tr *ngIf="userActivity.length === 0 && !isLoadingUsers">
+            <td colspan="4" class="text-center text-muted p-4">
+              No user activity recorded yet.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+

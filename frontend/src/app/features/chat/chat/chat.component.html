@@ -1,0 +1,173 @@
+<div class="chat-workspace">
+  <!-- Left: Thread History Panel -->
+  <aside class="chat-threads-sidebar">
+    <div class="threads-header">
+      <h3>AI Conversations</h3>
+      <button class="btn btn-primary btn-sm" (click)="startNewConversation()">
+        <span>+ New Chat</span>
+      </button>
+    </div>
+
+    <div class="threads-list">
+      <div *ngIf="isLoadingConversations" class="threads-loading">
+        <span class="spinner" style="width: 20px; height: 20px;"></span>
+      </div>
+
+      <div
+        *ngFor="let conv of conversations"
+        class="thread-item"
+        [class.active]="selectedConversation?.id === conv.id"
+        (click)="selectConversation(conv)"
+      >
+        <div class="thread-icon">💬</div>
+        <div class="thread-meta">
+          <div class="thread-title">{{ conv.title }}</div>
+          <div class="thread-date">{{ conv.createdAt | date:'shortDate' }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Right: Active Chat Conversation Area -->
+  <main class="chat-content">
+    <!-- Top Document Scope Bar -->
+    <header class="chat-scope-bar">
+      <div class="scope-info">
+        <strong>Filter Scope:</strong>
+        <span *ngIf="selectedDocIds.length === 0" class="badge badge-info">All Completed Documents</span>
+        <span *ngIf="selectedDocIds.length > 0" class="badge badge-accent">{{ selectedDocIds.length }} Specific Documents Selected</span>
+      </div>
+
+      <div class="scope-selector">
+        <select multiple [(ngModel)]="selectedDocIds" title="Select specific documents to restrict RAG context">
+          <option *ngFor="let doc of documents" [value]="doc.id">{{ doc.originalFileName }}</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Message Stream -->
+    <div class="chat-messages" #scrollContainer>
+      <div *ngIf="messages.length === 0 && !isLoadingMessages" class="chat-empty">
+        <div class="empty-icon">🤖</div>
+        <h2>Enterprise Document Intelligence</h2>
+        <p>Ask questions across policies, contracts, SLAs, or technical documentation.</p>
+        <div class="sample-queries">
+          <button class="sample-query-btn" (click)="userQuestion = 'What are the termination notice requirements and SLA commitments?'">
+            "What are the termination notice requirements and SLA commitments?"
+          </button>
+          <button class="sample-query-btn" (click)="userQuestion = 'Summarize key data protection and GDPR compliance obligations.'">
+            "Summarize key data protection and GDPR compliance obligations."
+          </button>
+        </div>
+      </div>
+
+      <div *ngFor="let msg of messages" class="message-row" [class.user-message]="msg.role === 'User'">
+        <div class="message-avatar">
+          {{ msg.role === 'User' ? '👤' : '🧠' }}
+        </div>
+        <div class="message-bubble">
+          <div class="message-header">
+            <span class="message-author">{{ msg.role === 'User' ? 'You' : 'DocuMind AI' }}</span>
+            <span class="message-time">{{ msg.createdAt | date:'shortTime' }}</span>
+          </div>
+
+          <!-- Insufficient Evidence Notice -->
+          <div *ngIf="msg.content.startsWith('INSUFFICIENT_EVIDENCE')" class="insufficient-alert">
+            <span>⚠️ Insufficient Grounding Evidence in Selected Documents</span>
+          </div>
+
+          <div class="message-text">
+            {{ msg.content }}
+          </div>
+
+          <!-- Grounded Citation Sources -->
+          <div class="message-sources" *ngIf="msg.sources && msg.sources.length > 0">
+            <div class="sources-title">Verified Citations ({{ msg.sources.length }} sources):</div>
+            <div class="sources-chips">
+              <button
+                *ngFor="let src of msg.sources"
+                class="source-chip"
+                (click)="openSourceExcerpt(src)"
+                title="Click to view extracted excerpt"
+              >
+                <span>📄 Page {{ src.pageNumber }}</span>
+                <span class="relevance-score">{{ (src.relevanceScore * 100).toFixed(0) }}% match</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Cost and Token telemetry + Feedback -->
+          <div class="message-footer" *ngIf="msg.role === 'Assistant' && msg.tokensUsed > 0">
+            <span class="telemetry-info text-muted text-sm">
+              {{ msg.tokensUsed }} tokens (${{ msg.estimatedCost.toFixed(5) }})
+            </span>
+            <div class="feedback-buttons">
+              <button
+                class="btn-icon btn-sm"
+                [class.active]="msg.feedbackScore === 5"
+                (click)="submitFeedback(msg, 5)"
+                title="Helpful response"
+              >
+                👍
+              </button>
+              <button
+                class="btn-icon btn-sm"
+                [class.active]="msg.feedbackScore === 1"
+                (click)="submitFeedback(msg, 1)"
+                title="Unhelpful response"
+              >
+                👎
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- In-flight typing indicator -->
+      <div class="message-row" *ngIf="isSending">
+        <div class="message-avatar">🧠</div>
+        <div class="message-bubble loading-bubble">
+          <span class="spinner" style="width: 16px; height: 16px;"></span>
+          <span>Searching vector index & synthesizing grounded answer...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Bar -->
+    <footer class="chat-input-bar">
+      <textarea
+        [(ngModel)]="userQuestion"
+        (keydown.enter)="$event.preventDefault(); sendMessage()"
+        placeholder="Ask a question about your documents... (Press Enter to send)"
+        rows="2"
+      ></textarea>
+      <button class="btn btn-primary send-btn" (click)="sendMessage()" [disabled]="!userQuestion.trim() || isSending">
+        <span>Send</span>
+        <span>➤</span>
+      </button>
+    </footer>
+  </main>
+
+  <!-- Grounding Excerpt Modal -->
+  <div class="modal-backdrop" *ngIf="activeSourceModal" (click)="closeSourceModal()">
+    <div class="modal-card card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Page {{ activeSourceModal.pageNumber }} Source Excerpt</h3>
+        <button class="btn btn-icon" (click)="closeSourceModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="meta-row">
+          <span class="badge badge-info">Document ID: {{ activeSourceModal.documentId }}</span>
+          <span class="badge badge-success">Relevance: {{ (activeSourceModal.relevanceScore * 100).toFixed(1) }}%</span>
+        </div>
+        <div class="excerpt-content">
+          "{{ activeSourceModal.excerpt }}"
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" (click)="closeSourceModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
